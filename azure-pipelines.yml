@@ -1,39 +1,22 @@
-# ASP.NET Core (.NET Framework)
-
-# Build and test ASP.NET Core projects targeting the full .NET Framework.
-# Add steps that publish symbols, save build artifacts, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
-
 trigger:
-- main
+- main  # Runs when code is pushed to main branch
 
 pool:
-  vmImage: 'windows-latest'
-
-variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  vmImage: 'windows-latest'  # Uses a Windows machine for the build
 
 steps:
-- task: NuGetToolInstaller@1
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '6.x'
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+- script: dotnet build --configuration Release
+  displayName: 'Build the Project'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="Default Web Site"'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- script: dotnet test --configuration Release
+  displayName: 'Run Tests'
 
-- task: VSTest@2
+- task: PublishBuildArtifacts@1
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
-- task: DotNetCoreCLI@2
-  inputs:
-    azureSubscription: 'Free Trial(b956885a-26d3-4e32-8509-ca68eafe7ac3)'
-    command: 'run'
+    pathToPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
