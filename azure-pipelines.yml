@@ -1,4 +1,8 @@
 trigger:
+- task: Docker@2
+  inputs:
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
 - main  # Runs when code is pushed to main branch
 
 pool:
